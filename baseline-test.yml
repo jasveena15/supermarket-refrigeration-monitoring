@@ -1,0 +1,17 @@
+config:
+  target: "http://supermarket-monitoring-alb-824271800.us-east-1.elb.amazonaws.com"
+  phases:
+    - duration: 60
+      arrivalRate: 20
+
+scenarios:
+  - flow:
+      - post:
+          url: "/monitor"
+          json:
+            storeId: "STORE_01"
+            unitId: "FREEZER_01"
+            temperature: -8
+            doorStatus: "CLOSED"
+            compressorStatus: "ON"
+            powerUsageWatts: 450

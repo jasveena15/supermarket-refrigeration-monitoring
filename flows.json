@@ -1,0 +1,246 @@
+[
+    {
+        "id": "261c13a730e3d6cd",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "7872698133550cf7",
+        "type": "mqtt in",
+        "z": "261c13a730e3d6cd",
+        "name": "",
+        "topic": "supermarket/refrigeration/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "1707ac3331a26381",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 200,
+        "wires": [
+            [
+                "453d7379b0dffaa9"
+            ]
+        ]
+    },
+    {
+        "id": "52138a8e31546e4c",
+        "type": "debug",
+        "z": "261c13a730e3d6cd",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 360,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "453d7379b0dffaa9",
+        "type": "function",
+        "z": "261c13a730e3d6cd",
+        "name": "Validate Sensor Data",
+        "func": "const data = msg.payload;\n\nif (\n    data.storeId &&\n    data.unitId &&\n    typeof data.temperature === \"number\" &&\n    data.doorStatus &&\n    data.compressorStatus &&\n    typeof data.powerUsageWatts === \"number\"\n) {\n    msg.valid = true;\n} else {\n    msg.valid = false;\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 200,
+        "wires": [
+            [
+                "2e8d8d5e15425480"
+            ]
+        ]
+    },
+    {
+        "id": "2e8d8d5e15425480",
+        "type": "switch",
+        "z": "261c13a730e3d6cd",
+        "name": "Valid or Invalid",
+        "property": "valid",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 640,
+        "y": 200,
+        "wires": [
+            [
+                "ac3c94e12c2cacab",
+                "d4cd9c6e0b946acb"
+            ],
+            [
+                "cab90f838fb3db4f"
+            ]
+        ]
+    },
+    {
+        "id": "ac3c94e12c2cacab",
+        "type": "debug",
+        "z": "261c13a730e3d6cd",
+        "name": "valid data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "cab90f838fb3db4f",
+        "type": "debug",
+        "z": "261c13a730e3d6cd",
+        "name": "invalid data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "d4cd9c6e0b946acb",
+        "type": "function",
+        "z": "261c13a730e3d6cd",
+        "name": "Check Sensor Rules",
+        "func": "const data = msg.payload;\n\nlet alerts = [];\n\nif (data.unitId.includes(\"FREEZER\") && data.temperature > -10) {\n    alerts.push(\"HIGH FREEZER TEMPERATURE\");\n}\n\nif (data.unitId.includes(\"FRIDGE\") && data.temperature > 8) {\n    alerts.push(\"HIGH FRIDGE TEMPERATURE\");\n}\n\nif (data.doorStatus === \"OPEN\") {\n    alerts.push(\"DOOR OPEN\");\n}\n\nif (data.compressorStatus === \"FAILED\") {\n    alerts.push(\"COMPRESSOR FAILURE\");\n}\n\nif (data.powerUsageWatts > 550) {\n    alerts.push(\"HIGH POWER USAGE\");\n}\n\nmsg.alerts = alerts;\n\nif (alerts.length > 0) {\n    msg.hasAlert = true;\n} else {\n    msg.hasAlert = false;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "62397ce7549f7e62"
+            ]
+        ]
+    },
+    {
+        "id": "62397ce7549f7e62",
+        "type": "switch",
+        "z": "261c13a730e3d6cd",
+        "name": "Normal or Alert",
+        "property": "hasAlert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 420,
+        "y": 340,
+        "wires": [
+            [
+                "3fb2515f98944d02"
+            ],
+            [
+                "c91b8ee075ae5239"
+            ]
+        ]
+    },
+    {
+        "id": "c91b8ee075ae5239",
+        "type": "debug",
+        "z": "261c13a730e3d6cd",
+        "name": "normal reading",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "3fb2515f98944d02",
+        "type": "debug",
+        "z": "261c13a730e3d6cd",
+        "name": "alert detected",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "alerts",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "1707ac3331a26381",
+        "type": "mqtt-broker",
+        "name": "Refrigeration Sensor Data",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
